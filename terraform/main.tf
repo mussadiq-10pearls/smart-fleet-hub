@@ -8,7 +8,13 @@ terraform {
       version = "~> 5.0"
     }
   }
-  # We'll use local state for simplicity, but mention S3 backend for production.
+  backend "s3" {
+    bucket         = "smart-fleet-terraform-state-469128506110" # replace with your bucket name
+    key            = "smart-fleet-hub/terraform.tfstate"
+    region         = "us-east-1"
+    encrypt        = true
+    dynamodb_table = "terraform-state-lock"
+  }
 }
 
 provider "aws" {
