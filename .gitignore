@@ -23,7 +23,6 @@ terraform.rc
 # --- Node.js / Lambda ---
 # Dependencies
 node_modules/
-package-lock.json
 
 # TypeScript compiled output
 dist/

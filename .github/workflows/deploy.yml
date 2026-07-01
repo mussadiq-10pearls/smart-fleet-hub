@@ -30,7 +30,7 @@ jobs:
           for LAMBDA in "${LAMBDAS[@]}"; do
             echo "Building $LAMBDA..."
             cd lambdas/$LAMBDA
-            npm ci
+            npm install
             npx tsc --noEmit   # type-check only
             npx tsc
             cd dist
