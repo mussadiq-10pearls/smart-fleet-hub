@@ -71,11 +71,26 @@ resource "aws_s3_bucket_policy" "frontend" {
   policy = data.aws_iam_policy_document.frontend_bucket_policy.json
 }
 
-# Upload the frontend file (using local_file data source would require Terraform to read the file; we'll use aws_s3_object)
 resource "aws_s3_object" "index_html" {
   bucket       = aws_s3_bucket.frontend.id
   key          = "index.html"
   source       = "../frontend/index.html"
   content_type = "text/html"
   etag         = filemd5("../frontend/index.html")
+}
+
+resource "aws_s3_object" "style_css" {
+  bucket       = aws_s3_bucket.frontend.id
+  key          = "style.css"
+  source       = "../frontend/style.css"
+  content_type = "text/css"
+  etag         = filemd5("../frontend/style.css")
+}
+
+resource "aws_s3_object" "script_js" {
+  bucket       = aws_s3_bucket.frontend.id
+  key          = "script.js"
+  source       = "../frontend/script.js"
+  content_type = "application/javascript"
+  etag         = filemd5("../frontend/script.js")
 }
