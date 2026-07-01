@@ -6,8 +6,8 @@ resource "aws_lambda_function" "safety_scorer" {
   timeout       = 60
   memory_size   = 512
 
-  filename         = "../lambdas/safety-scorer/dist/lambda.zip"
-  source_code_hash = filebase64sha256("../lambdas/safety-scorer/dist/lambda.zip")
+  filename         = "../lambdas/safety-scorer/lambda.zip"
+  source_code_hash = filebase64sha256("../lambdas/safety-scorer/lambda.zip")
 
   environment {
     variables = {

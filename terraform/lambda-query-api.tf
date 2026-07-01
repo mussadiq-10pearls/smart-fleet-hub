@@ -6,8 +6,8 @@ resource "aws_lambda_function" "query_api" {
   timeout       = 10
   memory_size   = 256
 
-  filename         = "../lambdas/query-api/dist/lambda.zip"
-  source_code_hash = filebase64sha256("../lambdas/query-api/dist/lambda.zip")
+  filename         = "../lambdas/query-api/lambda.zip"
+  source_code_hash = filebase64sha256("../lambdas/query-api/lambda.zip")
 
   environment {
     variables = {

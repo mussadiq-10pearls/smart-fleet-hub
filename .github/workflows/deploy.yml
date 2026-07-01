@@ -1,0 +1,95 @@
+name: Deploy Smart Fleet Hub
+
+on:
+  push:
+    branches: [main]
+
+env:
+  AWS_REGION: us-east-1 # or your preferred region
+  TF_DIR: terraform
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. Setup Node.js (for Lambdas and frontend)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # 3. Install dependencies and build each Lambda
+      - name: Build Lambdas
+        run: |
+          LAMBDAS=("data-simulator" "telemetry-processor" "safety-scorer" "query-api")
+          for LAMBDA in "${LAMBDAS[@]}"; do
+            echo "Building $LAMBDA..."
+            cd lambdas/$LAMBDA
+            npm ci
+            npx tsc --noEmit   # type-check only
+            npx tsc
+            cd dist
+            zip -r ../lambda.zip .
+            cd ../../..
+          done
+
+      # 4. Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.0"
+
+      # 5. Terraform Init (uses GitHub Secrets for AWS creds)
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ${{ env.TF_DIR }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # 6. Terraform Plan (preview changes)
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+        working-directory: ${{ env.TF_DIR }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # 7. Terraform Apply (deploy)
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+        working-directory: ${{ env.TF_DIR }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # 8. Upload frontend to S3 (if any change)
+      - name: Sync Frontend to S3
+        run: |
+          aws s3 cp frontend/index.html s3://smart-fleet-frontend-${{ secrets.AWS_ACCOUNT_ID }}/index.html --acl private
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # 9. Invalidate CloudFront cache
+      - name: Invalidate CloudFront
+        run: |
+          DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[?Id=='S3Origin']].Id" --output text --region ${{ env.AWS_REGION }})
+          aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" --region ${{ env.AWS_REGION }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # 10. Output the CloudFront URL
+      - name: Show CloudFront URL
+        run: |
+          CF_DOMAIN=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[?Id=='S3Origin']].DomainName" --output text --region ${{ env.AWS_REGION }})
+          echo "✅ Dashboard available at: https://$CF_DOMAIN" >> $GITHUB_STEP_SUMMARY
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

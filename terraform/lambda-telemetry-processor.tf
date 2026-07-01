@@ -6,8 +6,8 @@ resource "aws_lambda_function" "telemetry_processor" {
   timeout       = 30
   memory_size   = 256
 
-  filename         = "../lambdas/telemetry-processor/dist/lambda.zip"
-  source_code_hash = filebase64sha256("../lambdas/telemetry-processor/dist/lambda.zip")
+  filename         = "../lambdas/telemetry-processor/lambda.zip"
+  source_code_hash = filebase64sha256("../lambdas/telemetry-processor/lambda.zip")
 
   environment {
     variables = {
