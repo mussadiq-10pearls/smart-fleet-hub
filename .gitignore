@@ -1,0 +1,64 @@
+# --- Terraform ---
+# Local .terraform directories
+**/.terraform/*
+
+# Terraform state files (never commit these!)
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Override files (for local development)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# CLI configuration files
+.terraformrc
+terraform.rc
+
+# --- Node.js / Lambda ---
+# Dependencies
+node_modules/
+package-lock.json
+
+# TypeScript compiled output
+dist/
+
+# Lambda zip artifacts (generated during build)
+*.zip
+!*.tfvars
+
+# --- Secrets & Environment ---
+.env
+.env.*
+*.pem
+*.key
+
+# --- IDE & OS ---
+# JetBrains
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Windows
+Thumbs.db
+$RECYCLE.BIN/
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# Linux
+*~
+
+# --- General ---
+*.log
+yarn.lock
+credentials
+response.json

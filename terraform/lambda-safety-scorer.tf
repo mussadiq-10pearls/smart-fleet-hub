@@ -1,0 +1,35 @@
+resource "aws_lambda_function" "safety_scorer" {
+  function_name = "smart-fleet-safety-scorer"
+  role          = aws_iam_role.lambda_execution.arn
+  handler       = "index.handler"
+  runtime       = "nodejs20.x"
+  timeout       = 60
+  memory_size   = 512
+
+  filename         = "../lambdas/safety-scorer/dist/lambda.zip"
+  source_code_hash = filebase64sha256("../lambdas/safety-scorer/dist/lambda.zip")
+
+  environment {
+    variables = {
+      TELEMETRY_TABLE = aws_dynamodb_table.telemetry_events.name
+      SUMMARIES_TABLE = aws_dynamodb_table.driver_summaries.name
+    }
+  }
+}
+
+resource "aws_scheduler_schedule" "safety_scorer_cron" {
+  name        = "safety-scorer-every-2h10m"
+  group_name  = "default"
+  description = "Generate driver safety scores every 2 hours 10 minutes"
+
+  flexible_time_window {
+    mode = "OFF"
+  }
+
+  schedule_expression = "rate(130 minutes)" # 2h10m
+
+  target {
+    arn      = aws_lambda_function.safety_scorer.arn
+    role_arn = aws_iam_role.scheduler_execution_role.arn
+  }
+}
