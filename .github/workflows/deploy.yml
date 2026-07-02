@@ -36,8 +36,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: data-simulator-zip
-          path: lambda.zip
-        working-directory: lambdas/data-simulator
+          path: lambdas/data-simulator/lambda.zip
 
   build-telemetry-processor:
     if: |
@@ -61,8 +60,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: telemetry-processor-zip
-          path: lambda.zip
-        working-directory: lambdas/telemetry-processor
+          path: lambdas/telemetry-processor/lambda.zip
 
   build-safety-scorer:
     if: |
@@ -86,8 +84,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: safety-scorer-zip
-          path: lambda.zip
-        working-directory: lambdas/safety-scorer
+          path: lambdas/safety-scorer/lambda.zip
 
   build-query-api:
     if: |
@@ -111,8 +108,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: query-api-zip
-          path: lambda.zip
-        working-directory: lambdas/query-api
+          path: lambdas/query-api/lambda.zip
 
   # ---------- Terraform deploy ----------
   deploy:
@@ -131,7 +127,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Download each artifact – only if they exist (ignores missing)
+      # Download each artifact – ignore if missing
       - name: Download data-simulator artifact
         uses: actions/download-artifact@v4
         with:
