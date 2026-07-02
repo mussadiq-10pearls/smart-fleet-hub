@@ -22,17 +22,21 @@ jobs:
         contains(github.event.head_commit.removed, 'lambdas/data-simulator/')
       )
     runs-on: ubuntu-latest
+    outputs:
+      artifact_available: ${{ steps.build.outputs.artifact_available }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - name: Build
+        id: build
         run: |
           cd lambdas/data-simulator
           npm install
           npx tsc --noEmit
           npx tsc
           cd dist && zip -r ../lambda.zip .
+          echo "artifact_available=true" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
           name: data-simulator-zip
@@ -46,17 +50,21 @@ jobs:
         contains(github.event.head_commit.removed, 'lambdas/telemetry-processor/')
       )
     runs-on: ubuntu-latest
+    outputs:
+      artifact_available: ${{ steps.build.outputs.artifact_available }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - name: Build
+        id: build
         run: |
           cd lambdas/telemetry-processor
           npm install
           npx tsc --noEmit
           npx tsc
           cd dist && zip -r ../lambda.zip .
+          echo "artifact_available=true" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
           name: telemetry-processor-zip
@@ -70,17 +78,21 @@ jobs:
         contains(github.event.head_commit.removed, 'lambdas/safety-scorer/')
       )
     runs-on: ubuntu-latest
+    outputs:
+      artifact_available: ${{ steps.build.outputs.artifact_available }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - name: Build
+        id: build
         run: |
           cd lambdas/safety-scorer
           npm install
           npx tsc --noEmit
           npx tsc
           cd dist && zip -r ../lambda.zip .
+          echo "artifact_available=true" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
           name: safety-scorer-zip
@@ -94,17 +106,21 @@ jobs:
         contains(github.event.head_commit.removed, 'lambdas/query-api/')
       )
     runs-on: ubuntu-latest
+    outputs:
+      artifact_available: ${{ steps.build.outputs.artifact_available }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - name: Build
+        id: build
         run: |
           cd lambdas/query-api
           npm install
           npx tsc --noEmit
           npx tsc
           cd dist && zip -r ../lambda.zip .
+          echo "artifact_available=true" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
           name: query-api-zip
@@ -127,34 +143,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Download each artifact – ignore if missing
+      # Download each artifact – ONLY if the corresponding build job succeeded
       - name: Download data-simulator artifact
+        if: needs.build-data-simulator.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: data-simulator-zip
           path: lambdas/data-simulator
-          if-no-files-found: ignore
 
       - name: Download telemetry-processor artifact
+        if: needs.build-telemetry-processor.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: telemetry-processor-zip
           path: lambdas/telemetry-processor
-          if-no-files-found: ignore
 
       - name: Download safety-scorer artifact
+        if: needs.build-safety-scorer.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: safety-scorer-zip
           path: lambdas/safety-scorer
-          if-no-files-found: ignore
 
       - name: Download query-api artifact
+        if: needs.build-query-api.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: query-api-zip
           path: lambdas/query-api
-          if-no-files-found: ignore
 
       - uses: hashicorp/setup-terraform@v3
         with:
