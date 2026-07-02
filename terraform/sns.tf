@@ -6,10 +6,8 @@ resource "aws_sns_topic" "safety_alerts" {
   }
 }
 
-# Optional: email subscription for demo purposes (you'll receive emails)
-# Replace with your email to see alerts
-resource "aws_sns_topic_subscription" "email_alert" {
+resource "aws_sns_topic_subscription" "alerts_sqs" {
   topic_arn = aws_sns_topic.safety_alerts.arn
-  protocol  = "email"
-  endpoint  = "mussadiqchhipa@gmail.com"
+  protocol  = "sqs"
+  endpoint  = aws_sqs_queue.alerts_queue.arn
 }

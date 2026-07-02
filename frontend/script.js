@@ -42,6 +42,12 @@ async function refreshData() {
   } catch (err) {
     console.error('Scores fetch error', err);
   }
+
+   try {
+    const alertsResp = await fetch(`${API_BASE}/alerts`);
+    const alerts = await alertsResp.json();
+    renderAlerts(alerts);
+  } catch (err) { console.error('Alerts fetch error', err); }
 }
 
 async function fetchTelemetry(vehicleId, startKey = null) {
@@ -190,6 +196,22 @@ function clearAutoRefresh() {
     autoRefreshInterval = null;
     console.log('Auto‑refresh stopped');
   }
+}
+
+function renderAlerts(data) {
+  const tbody = document.querySelector('#alertsTable tbody');
+  tbody.innerHTML = '';
+  data.forEach((item, index) => {
+    const row = document.createElement('tr');
+    const time = new Date(item.timestamp).toLocaleTimeString();
+    row.innerHTML = `
+      <td>${index + 1}</td>
+      <td>${item.vehicleId}</td>
+      <td>${time}</td>
+      <td>${item.violations.join(', ')}</td>
+    `;
+    tbody.appendChild(row);
+  });
 }
 
 // ==========================================

@@ -27,7 +27,7 @@ jobs:
 
       - name: Build All Lambdas
         run: |
-          LAMBDAS=("data-simulator" "telemetry-processor" "safety-scorer" "query-api")
+          LAMBDAS=("data-simulator" "telemetry-processor" "safety-scorer" "query-api" "alerts-persister")
           for LAMBDA in "${LAMBDAS[@]}"; do
             echo "Building $LAMBDA..."
             cd lambdas/$LAMBDA

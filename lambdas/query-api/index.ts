@@ -128,6 +128,26 @@ export const handler = async (
       };
     }
 
+    // ---------- ALERTS -----------------------
+    else if (path === "/alerts") {
+      const limit = 20; // last 20 alerts
+      const result = await docClient.send(
+        new ScanCommand({
+          TableName: process.env.ALERTS_TABLE!,
+          Limit: limit,
+        }),
+      );
+      const items = result.Items || [];
+      return {
+        statusCode: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+        body: JSON.stringify(items),
+      };
+    }
+
     // ---------- FALLBACK ----------
     else {
       return {

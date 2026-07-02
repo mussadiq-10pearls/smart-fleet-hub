@@ -45,3 +45,9 @@ resource "aws_lambda_permission" "query_api_apigw" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.fleet_api.execution_arn}/*/*"
 }
+
+resource "aws_apigatewayv2_route" "alerts_route" {
+  api_id    = aws_apigatewayv2_api.fleet_api.id
+  route_key = "GET /alerts"
+  target    = "integrations/${aws_apigatewayv2_integration.query_lambda.id}"
+}

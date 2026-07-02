@@ -41,7 +41,8 @@ resource "aws_iam_role_policy" "lambda_custom" {
         ]
         Resource = [
           aws_dynamodb_table.telemetry_events.arn,
-          aws_dynamodb_table.driver_summaries.arn
+          aws_dynamodb_table.driver_summaries.arn,
+          aws_dynamodb_table.alerts.arn
         ]
       },
       {
