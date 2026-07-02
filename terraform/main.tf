@@ -9,11 +9,11 @@ terraform {
     }
   }
   backend "s3" {
-    bucket       = "smart-fleet-terraform-state-469128506110" # replace with your bucket name
-    key          = "smart-fleet-hub/terraform.tfstate"
-    region       = "us-east-1"
-    encrypt      = true
-    use_lockfile = true
+    bucket         = "smart-fleet-terraform-state-469128506110" # replace with your bucket name
+    key            = "smart-fleet-hub/terraform.tfstate"
+    region         = "us-east-1"
+    encrypt        = true
+    dynamodb_table = "terraform-state-lock"
   }
 }
 
