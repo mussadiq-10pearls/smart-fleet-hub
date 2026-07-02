@@ -25,13 +25,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: cd lambdas/data-simulator && npm install && npx tsc --noEmit && npx tsc && (cd dist && zip -r ../lambda.zip .)
+        with: { node-version: 20 }
+      - name: Build
+        run: |
+          cd lambdas/data-simulator
+          npm install
+          npx tsc --noEmit
+          npx tsc
+          cd dist && zip -r ../lambda.zip .
       - uses: actions/upload-artifact@v4
         with:
           name: data-simulator-zip
-          path: lambdas/data-simulator/lambda.zip
+          path: lambda.zip
+        working-directory: lambdas/data-simulator
 
   build-telemetry-processor:
     if: |
@@ -44,13 +50,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: cd lambdas/telemetry-processor && npm install && npx tsc --noEmit && npx tsc && (cd dist && zip -r ../lambda.zip .)
+        with: { node-version: 20 }
+      - name: Build
+        run: |
+          cd lambdas/telemetry-processor
+          npm install
+          npx tsc --noEmit
+          npx tsc
+          cd dist && zip -r ../lambda.zip .
       - uses: actions/upload-artifact@v4
         with:
           name: telemetry-processor-zip
-          path: lambdas/telemetry-processor/lambda.zip
+          path: lambda.zip
+        working-directory: lambdas/telemetry-processor
 
   build-safety-scorer:
     if: |
@@ -63,13 +75,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: cd lambdas/safety-scorer && npm install && npx tsc --noEmit && npx tsc && (cd dist && zip -r ../lambda.zip .)
+        with: { node-version: 20 }
+      - name: Build
+        run: |
+          cd lambdas/safety-scorer
+          npm install
+          npx tsc --noEmit
+          npx tsc
+          cd dist && zip -r ../lambda.zip .
       - uses: actions/upload-artifact@v4
         with:
           name: safety-scorer-zip
-          path: lambdas/safety-scorer/lambda.zip
+          path: lambda.zip
+        working-directory: lambdas/safety-scorer
 
   build-query-api:
     if: |
@@ -82,23 +100,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: cd lambdas/query-api && npm install && npx tsc --noEmit && npx tsc && (cd dist && zip -r ../lambda.zip .)
+        with: { node-version: 20 }
+      - name: Build
+        run: |
+          cd lambdas/query-api
+          npm install
+          npx tsc --noEmit
+          npx tsc
+          cd dist && zip -r ../lambda.zip .
       - uses: actions/upload-artifact@v4
         with:
           name: query-api-zip
-          path: lambdas/query-api/lambda.zip
+          path: lambda.zip
+        working-directory: lambdas/query-api
 
-  # ---------- Terraform deploy (always runs if any Lambda or frontend changed) ----------
+  # ---------- Terraform deploy ----------
   deploy:
     needs:
-      [
-        build-data-simulator,
-        build-telemetry-processor,
-        build-safety-scorer,
-        build-query-api,
-      ]
+      - build-data-simulator
+      - build-telemetry-processor
+      - build-safety-scorer
+      - build-query-api
     if: |
       always() &&
       (needs.build-data-simulator.result == 'success' || needs.build-data-simulator.result == 'skipped') &&
@@ -109,50 +131,64 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Download all artifact zips (if they exist) and place them in the correct folders
-      - name: Download Lambda artifacts
-        run: |
-          mkdir -p lambdas/data-simulator lambdas/telemetry-processor lambdas/safety-scorer lambdas/query-api
-          for LAMBDA in data-simulator telemetry-processor safety-scorer query-api; do
-            ARTIFACT_NAME="${LAMBDA}-zip"
-            if curl -s -o /dev/null -w "%{http_code}" "${{ github.api_url }}/repos/${{ github.repository }}/actions/artifacts?name=$ARTIFACT_NAME" | grep -q 200; then
-              echo "Downloading $ARTIFACT_NAME..."
-              gh run download ${{ github.run_id }} -n $ARTIFACT_NAME -D lambdas/$LAMBDA/
-            else
-              echo "No artifact for $LAMBDA, using existing zip (if any)"
-            fi
-          done
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Download each artifact – only if they exist (ignores missing)
+      - name: Download data-simulator artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: data-simulator-zip
+          path: lambdas/data-simulator
+          if-no-files-found: ignore
 
-      # Setup Terraform and deploy
+      - name: Download telemetry-processor artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: telemetry-processor-zip
+          path: lambdas/telemetry-processor
+          if-no-files-found: ignore
+
+      - name: Download safety-scorer artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: safety-scorer-zip
+          path: lambdas/safety-scorer
+          if-no-files-found: ignore
+
+      - name: Download query-api artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: query-api-zip
+          path: lambdas/query-api
+          if-no-files-found: ignore
+
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.5.0"
 
-      - run: terraform init
+      - name: Terraform Init
+        run: terraform init
         working-directory: terraform
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - run: terraform plan -out=tfplan
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
         working-directory: terraform
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - run: terraform apply -auto-approve tfplan
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
         working-directory: terraform
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      # Frontend upload (always, if changed – we can rely on Terraform detecting etag change)
       - name: Sync Frontend to S3
         run: |
           aws s3 cp frontend/index.html s3://smart-fleet-frontend-${{ secrets.AWS_ACCOUNT_ID }}/index.html --acl private
-          aws s3 cp frontend/style.css s3://smart-fleet-frontend-${{ secrets.AWS_ACCOUNT_ID }}/style.css --acl private
+          aws s3 cp frontend/style.css  s3://smart-fleet-frontend-${{ secrets.AWS_ACCOUNT_ID }}/style.css  --acl private
           aws s3 cp frontend/script.js s3://smart-fleet-frontend-${{ secrets.AWS_ACCOUNT_ID }}/script.js --acl private
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
