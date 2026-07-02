@@ -13,166 +13,34 @@ env:
   AWS_REGION: us-east-1
 
 jobs:
-  # ---------- Individual Lambda builds ----------
-  build-data-simulator:
-    if: |
-      github.event_name == 'push' && (
-        contains(github.event.head_commit.modified, 'lambdas/data-simulator/') ||
-        contains(github.event.head_commit.added, 'lambdas/data-simulator/') ||
-        contains(github.event.head_commit.removed, 'lambdas/data-simulator/')
-      )
+  build-and-deploy:
     runs-on: ubuntu-latest
-    outputs:
-      artifact_available: ${{ steps.build.outputs.artifact_available }}
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - name: Build
-        id: build
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build All Lambdas
         run: |
-          cd lambdas/data-simulator
-          npm install
-          npx tsc --noEmit
-          npx tsc
-          cd dist && zip -r ../lambda.zip .
-          echo "artifact_available=true" >> $GITHUB_OUTPUT
-      - uses: actions/upload-artifact@v4
-        with:
-          name: data-simulator-zip
-          path: lambdas/data-simulator/lambda.zip
+          LAMBDAS=("data-simulator" "telemetry-processor" "safety-scorer" "query-api")
+          for LAMBDA in "${LAMBDAS[@]}"; do
+            echo "Building $LAMBDA..."
+            cd lambdas/$LAMBDA
+            npm install
+            npx tsc --noEmit
+            npx tsc
+            cd dist
+            zip -r ../lambda.zip .
+            cd ../../..
+          done
 
-  build-telemetry-processor:
-    if: |
-      github.event_name == 'push' && (
-        contains(github.event.head_commit.modified, 'lambdas/telemetry-processor/') ||
-        contains(github.event.head_commit.added, 'lambdas/telemetry-processor/') ||
-        contains(github.event.head_commit.removed, 'lambdas/telemetry-processor/')
-      )
-    runs-on: ubuntu-latest
-    outputs:
-      artifact_available: ${{ steps.build.outputs.artifact_available }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - name: Build
-        id: build
-        run: |
-          cd lambdas/telemetry-processor
-          npm install
-          npx tsc --noEmit
-          npx tsc
-          cd dist && zip -r ../lambda.zip .
-          echo "artifact_available=true" >> $GITHUB_OUTPUT
-      - uses: actions/upload-artifact@v4
-        with:
-          name: telemetry-processor-zip
-          path: lambdas/telemetry-processor/lambda.zip
-
-  build-safety-scorer:
-    if: |
-      github.event_name == 'push' && (
-        contains(github.event.head_commit.modified, 'lambdas/safety-scorer/') ||
-        contains(github.event.head_commit.added, 'lambdas/safety-scorer/') ||
-        contains(github.event.head_commit.removed, 'lambdas/safety-scorer/')
-      )
-    runs-on: ubuntu-latest
-    outputs:
-      artifact_available: ${{ steps.build.outputs.artifact_available }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - name: Build
-        id: build
-        run: |
-          cd lambdas/safety-scorer
-          npm install
-          npx tsc --noEmit
-          npx tsc
-          cd dist && zip -r ../lambda.zip .
-          echo "artifact_available=true" >> $GITHUB_OUTPUT
-      - uses: actions/upload-artifact@v4
-        with:
-          name: safety-scorer-zip
-          path: lambdas/safety-scorer/lambda.zip
-
-  build-query-api:
-    if: |
-      github.event_name == 'push' && (
-        contains(github.event.head_commit.modified, 'lambdas/query-api/') ||
-        contains(github.event.head_commit.added, 'lambdas/query-api/') ||
-        contains(github.event.head_commit.removed, 'lambdas/query-api/')
-      )
-    runs-on: ubuntu-latest
-    outputs:
-      artifact_available: ${{ steps.build.outputs.artifact_available }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - name: Build
-        id: build
-        run: |
-          cd lambdas/query-api
-          npm install
-          npx tsc --noEmit
-          npx tsc
-          cd dist && zip -r ../lambda.zip .
-          echo "artifact_available=true" >> $GITHUB_OUTPUT
-      - uses: actions/upload-artifact@v4
-        with:
-          name: query-api-zip
-          path: lambdas/query-api/lambda.zip
-
-  # ---------- Terraform deploy ----------
-  deploy:
-    needs:
-      - build-data-simulator
-      - build-telemetry-processor
-      - build-safety-scorer
-      - build-query-api
-    if: |
-      always() &&
-      (needs.build-data-simulator.result == 'success' || needs.build-data-simulator.result == 'skipped') &&
-      (needs.build-telemetry-processor.result == 'success' || needs.build-telemetry-processor.result == 'skipped') &&
-      (needs.build-safety-scorer.result == 'success' || needs.build-safety-scorer.result == 'skipped') &&
-      (needs.build-query-api.result == 'success' || needs.build-query-api.result == 'skipped')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      # Download each artifact – ONLY if the corresponding build job succeeded
-      - name: Download data-simulator artifact
-        if: needs.build-data-simulator.result == 'success'
-        uses: actions/download-artifact@v4
-        with:
-          name: data-simulator-zip
-          path: lambdas/data-simulator
-
-      - name: Download telemetry-processor artifact
-        if: needs.build-telemetry-processor.result == 'success'
-        uses: actions/download-artifact@v4
-        with:
-          name: telemetry-processor-zip
-          path: lambdas/telemetry-processor
-
-      - name: Download safety-scorer artifact
-        if: needs.build-safety-scorer.result == 'success'
-        uses: actions/download-artifact@v4
-        with:
-          name: safety-scorer-zip
-          path: lambdas/safety-scorer
-
-      - name: Download query-api artifact
-        if: needs.build-query-api.result == 'success'
-        uses: actions/download-artifact@v4
-        with:
-          name: query-api-zip
-          path: lambdas/query-api
-
-      - uses: hashicorp/setup-terraform@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.5.0"
 
