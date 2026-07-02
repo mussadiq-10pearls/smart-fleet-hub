@@ -1,7 +1,7 @@
 // ==========================================
 // CONFIGURATION
 // ==========================================
-const API_BASE = "YOUR_API_GATEWAY_URL"; // e.g., https://abc123.execute-api.us-east-1.amazonaws.com
+const API_BASE = "https://jqobu1e2g5.execute-api.us-east-1.amazonaws.com"; // e.g., https://abc123.execute-api.us-east-1.amazonaws.com
 
 // ==========================================
 // PAGINATION STATE
@@ -10,9 +10,14 @@ let telemetryNextKey = null;
 let isLoadingMore = false;
 
 // ==========================================
+// AUTO‑REFRESH STATE
+// ==========================================
+let autoRefreshInterval = null;      // holds the setInterval ID
+const AUTO_REFRESH_MS = 2 * 60 * 1000; // 2 minutes
+
+// ==========================================
 // FETCH & RENDER
 // ==========================================
-
 async function refreshData() {
   const vehicleId = document.getElementById('vehicleSelect').value;
 
@@ -21,8 +26,9 @@ async function refreshData() {
   isLoadingMore = false;
   const tbody = document.querySelector('#telemetryTable tbody');
   tbody.innerHTML = '';
-  document.getElementById('loadMoreBtn').style.display = 'none';
-  document.getElementById('loadMoreBtn').disabled = false;
+  const loadMoreBtn = document.getElementById('loadMoreBtn');
+  loadMoreBtn.style.display = 'none';
+  loadMoreBtn.disabled = false;
 
   // Fetch first page of telemetry
   await fetchTelemetry(vehicleId);
@@ -53,7 +59,7 @@ async function fetchTelemetry(vehicleId, startKey = null) {
     telemetryNextKey = data.nextKey || null;
 
     const tbody = document.querySelector('#telemetryTable tbody');
-    items.forEach((item, idx) => {
+    items.forEach((item) => {
       const row = document.createElement('tr');
       if (item.speed > 100 || item.harshBraking) row.classList.add('violation');
       const time = new Date(item.timestamp).toLocaleTimeString();
@@ -69,7 +75,7 @@ async function fetchTelemetry(vehicleId, startKey = null) {
       tbody.appendChild(row);
     });
 
-    // Control Load More button visibility
+    // Load More button visibility
     const loadMoreBtn = document.getElementById('loadMoreBtn');
     if (telemetryNextKey) {
       loadMoreBtn.style.display = 'inline-block';
@@ -77,7 +83,7 @@ async function fetchTelemetry(vehicleId, startKey = null) {
       loadMoreBtn.style.display = 'none';
     }
 
-    // Update KPI cards based on all currently visible rows
+    // Update KPI cards from visible rows
     updateStatsFromDOM();
   } catch (err) {
     console.error('Telemetry fetch error', err);
@@ -100,7 +106,7 @@ async function loadMoreTelemetry() {
 }
 
 // ==========================================
-// RENDER SCORES (unchanged)
+// RENDER SCORES
 // ==========================================
 function renderScores(data) {
   const tbody = document.querySelector('#scoresTable tbody');
@@ -156,7 +162,38 @@ function updateSafestDriver(scores) {
 }
 
 // ==========================================
-// INITIAL LOAD & AUTO‑REFRESH
+// AUTO‑REFRESH TOGGLE
+// ==========================================
+function setupAutoRefreshToggle() {
+  const toggle = document.getElementById('autoRefreshToggle');
+  toggle.checked = false;   // off by default
+  clearAutoRefresh();
+
+  toggle.addEventListener('change', () => {
+    if (toggle.checked) {
+      startAutoRefresh();
+    } else {
+      clearAutoRefresh();
+    }
+  });
+}
+
+function startAutoRefresh() {
+  clearAutoRefresh();   // avoid multiple intervals
+  autoRefreshInterval = setInterval(refreshData, AUTO_REFRESH_MS);
+  console.log('Auto‑refresh started (every 2 minutes)');
+}
+
+function clearAutoRefresh() {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+    autoRefreshInterval = null;
+    console.log('Auto‑refresh stopped');
+  }
+}
+
+// ==========================================
+// INITIAL LOAD
 // ==========================================
 refreshData();
-setInterval(refreshData, 30000);
+setupAutoRefreshToggle();
