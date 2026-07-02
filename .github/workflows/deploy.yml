@@ -48,6 +48,10 @@ jobs:
       - name: Verify Terraform version
         run: terraform version
 
+      - name: Clear Terraform cache
+        run: rm -rf .terraform
+        working-directory: terraform
+
       - name: Terraform Init
         run: terraform init
         working-directory: terraform
