@@ -54,7 +54,7 @@ resource "aws_iam_role_policy" "lambda_custom" {
           "sqs:DeleteMessage",
           "sqs:GetQueueAttributes"
         ]
-        Resource = [aws_sqs_queue.raw_telemetry.arn]
+        Resource = [aws_sqs_queue.raw_telemetry.arn, aws_sqs_queue.alerts_queue.arn]
       },
       {
         Effect   = "Allow"
