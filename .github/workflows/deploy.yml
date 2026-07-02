@@ -45,13 +45,6 @@ jobs:
           terraform_version: "1.6.0"
           terraform_wrapper: false
 
-      - name: Verify Terraform version
-        run: terraform version
-
-      - name: Clear Terraform cache
-        run: rm -rf .terraform
-        working-directory: terraform
-
       - name: Terraform Init
         run: terraform init
         working-directory: terraform
