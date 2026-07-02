@@ -3,80 +3,161 @@ name: Deploy Smart Fleet Hub
 on:
   push:
     branches: [main]
+    paths:
+      - "lambdas/**"
+      - "frontend/**"
+      - "terraform/**"
+      - ".github/workflows/deploy.yml"
 
 env:
-  AWS_REGION: us-east-1 # or your preferred region
-  TF_DIR: terraform
+  AWS_REGION: us-east-1
 
 jobs:
-  build-and-deploy:
+  # ---------- Individual Lambda builds ----------
+  build-data-simulator:
+    if: |
+      github.event_name == 'push' && (
+        contains(github.event.head_commit.modified, 'lambdas/data-simulator/') ||
+        contains(github.event.head_commit.added, 'lambdas/data-simulator/') ||
+        contains(github.event.head_commit.removed, 'lambdas/data-simulator/')
+      )
     runs-on: ubuntu-latest
-
     steps:
-      # 1. Checkout code
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # 2. Setup Node.js (for Lambdas and frontend)
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - run: cd lambdas/data-simulator && npm install && npx tsc --noEmit && npx tsc && (cd dist && zip -r ../lambda.zip .)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-simulator-zip
+          path: lambdas/data-simulator/lambda.zip
 
-      # 3. Install dependencies and build each Lambda
-      - name: Build Lambdas
+  build-telemetry-processor:
+    if: |
+      github.event_name == 'push' && (
+        contains(github.event.head_commit.modified, 'lambdas/telemetry-processor/') ||
+        contains(github.event.head_commit.added, 'lambdas/telemetry-processor/') ||
+        contains(github.event.head_commit.removed, 'lambdas/telemetry-processor/')
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: cd lambdas/telemetry-processor && npm install && npx tsc --noEmit && npx tsc && (cd dist && zip -r ../lambda.zip .)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: telemetry-processor-zip
+          path: lambdas/telemetry-processor/lambda.zip
+
+  build-safety-scorer:
+    if: |
+      github.event_name == 'push' && (
+        contains(github.event.head_commit.modified, 'lambdas/safety-scorer/') ||
+        contains(github.event.head_commit.added, 'lambdas/safety-scorer/') ||
+        contains(github.event.head_commit.removed, 'lambdas/safety-scorer/')
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: cd lambdas/safety-scorer && npm install && npx tsc --noEmit && npx tsc && (cd dist && zip -r ../lambda.zip .)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: safety-scorer-zip
+          path: lambdas/safety-scorer/lambda.zip
+
+  build-query-api:
+    if: |
+      github.event_name == 'push' && (
+        contains(github.event.head_commit.modified, 'lambdas/query-api/') ||
+        contains(github.event.head_commit.added, 'lambdas/query-api/') ||
+        contains(github.event.head_commit.removed, 'lambdas/query-api/')
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: cd lambdas/query-api && npm install && npx tsc --noEmit && npx tsc && (cd dist && zip -r ../lambda.zip .)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: query-api-zip
+          path: lambdas/query-api/lambda.zip
+
+  # ---------- Terraform deploy (always runs if any Lambda or frontend changed) ----------
+  deploy:
+    needs:
+      [
+        build-data-simulator,
+        build-telemetry-processor,
+        build-safety-scorer,
+        build-query-api,
+      ]
+    if: |
+      always() &&
+      (needs.build-data-simulator.result == 'success' || needs.build-data-simulator.result == 'skipped') &&
+      (needs.build-telemetry-processor.result == 'success' || needs.build-telemetry-processor.result == 'skipped') &&
+      (needs.build-safety-scorer.result == 'success' || needs.build-safety-scorer.result == 'skipped') &&
+      (needs.build-query-api.result == 'success' || needs.build-query-api.result == 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Download all artifact zips (if they exist) and place them in the correct folders
+      - name: Download Lambda artifacts
         run: |
-          LAMBDAS=("data-simulator" "telemetry-processor" "safety-scorer" "query-api")
-          for LAMBDA in "${LAMBDAS[@]}"; do
-            echo "Building $LAMBDA..."
-            cd lambdas/$LAMBDA
-            npm install
-            npx tsc --noEmit   # type-check only
-            npx tsc
-            cd dist
-            zip -r ../lambda.zip .
-            cd ../../..
+          mkdir -p lambdas/data-simulator lambdas/telemetry-processor lambdas/safety-scorer lambdas/query-api
+          for LAMBDA in data-simulator telemetry-processor safety-scorer query-api; do
+            ARTIFACT_NAME="${LAMBDA}-zip"
+            if curl -s -o /dev/null -w "%{http_code}" "${{ github.api_url }}/repos/${{ github.repository }}/actions/artifacts?name=$ARTIFACT_NAME" | grep -q 200; then
+              echo "Downloading $ARTIFACT_NAME..."
+              gh run download ${{ github.run_id }} -n $ARTIFACT_NAME -D lambdas/$LAMBDA/
+            else
+              echo "No artifact for $LAMBDA, using existing zip (if any)"
+            fi
           done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 4. Setup Terraform
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      # Setup Terraform and deploy
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.5.0"
 
-      # 5. Terraform Init (uses GitHub Secrets for AWS creds)
-      - name: Terraform Init
-        run: terraform init
-        working-directory: ${{ env.TF_DIR }}
+      - run: terraform init
+        working-directory: terraform
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      # 6. Terraform Plan (preview changes)
-      - name: Terraform Plan
-        run: terraform plan -out=tfplan
-        working-directory: ${{ env.TF_DIR }}
+      - run: terraform plan -out=tfplan
+        working-directory: terraform
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      # 7. Terraform Apply (deploy)
-      - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
-        working-directory: ${{ env.TF_DIR }}
+      - run: terraform apply -auto-approve tfplan
+        working-directory: terraform
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      # 8. Upload frontend to S3 (if any change)
+      # Frontend upload (always, if changed – we can rely on Terraform detecting etag change)
       - name: Sync Frontend to S3
         run: |
           aws s3 cp frontend/index.html s3://smart-fleet-frontend-${{ secrets.AWS_ACCOUNT_ID }}/index.html --acl private
+          aws s3 cp frontend/style.css s3://smart-fleet-frontend-${{ secrets.AWS_ACCOUNT_ID }}/style.css --acl private
+          aws s3 cp frontend/script.js s3://smart-fleet-frontend-${{ secrets.AWS_ACCOUNT_ID }}/script.js --acl private
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      # 9. Invalidate CloudFront cache
       - name: Invalidate CloudFront
         run: |
           DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[?Id=='S3Origin']].Id" --output text --region ${{ env.AWS_REGION }})
@@ -85,7 +166,6 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      # 10. Output the CloudFront URL
       - name: Show CloudFront URL
         run: |
           CF_DOMAIN=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[?Id=='S3Origin']].DomainName" --output text --region ${{ env.AWS_REGION }})

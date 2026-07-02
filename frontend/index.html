@@ -1,72 +1,108 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Fleet Safety & Compliance Hub</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="container">
-    <header>
-      <h1>🚛 Fleet Safety & Compliance Hub</h1>
-      <div class="controls">
-        <label for="vehicleSelect">Vehicle:</label>
-        <select id="vehicleSelect">
-          <option value="">All Vehicles</option>
-          <option value="V-101">V-101</option>
-          <option value="V-202">V-202</option>
-          <option value="V-303">V-303</option>
-          <option value="V-404">V-404</option>
-          <option value="V-505">V-505</option>
-        </select>
-        <button class="refresh-btn" onclick="refreshData()">🔄 Refresh Now</button>
-      </div>
-    </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Fleet Safety & Compliance Hub</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>🚛 Fleet Safety & Compliance Hub</h1>
+        <div class="controls">
+          <label for="vehicleSelect">Vehicle:</label>
+          <select id="vehicleSelect">
+            <option value="">All Vehicles</option>
+            <option value="V-101">V-101</option>
+            <option value="V-202">V-202</option>
+            <option value="V-303">V-303</option>
+            <option value="V-404">V-404</option>
+            <option value="V-505">V-505</option>
+          </select>
+          <button class="refresh-btn" onclick="refreshData()">
+            🔄 Refresh Now
+          </button>
+        </div>
+      </header>
 
-    <!-- KPI Cards -->
-    <div class="stats-grid">
-      <div class="stat-card accent">
-        <div class="value" id="totalVehicles">--</div>
-        <div class="label">Active Vehicles</div>
+      <!-- KPI Cards -->
+      <div class="stats-grid">
+        <div class="stat-card accent">
+          <div class="value" id="totalVehicles">--</div>
+          <div class="label">Active Vehicles</div>
+        </div>
+        <div class="stat-card success">
+          <div class="value" id="totalEvents">--</div>
+          <div class="label">Telemetry Events</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="value" id="alertsCount">--</div>
+          <div class="label">Recent Alerts</div>
+        </div>
+        <div class="stat-card danger">
+          <div class="value" id="mostSafeDriver">--</div>
+          <div class="label">Safest Driver</div>
+        </div>
       </div>
-      <div class="stat-card success">
-        <div class="value" id="totalEvents">--</div>
-        <div class="label">Telemetry Events</div>
-      </div>
-      <div class="stat-card warning">
-        <div class="value" id="alertsCount">--</div>
-        <div class="label">Recent Alerts</div>
-      </div>
-      <div class="stat-card danger">
-        <div class="value" id="mostSafeDriver">--</div>
-        <div class="label">Safest Driver</div>
+
+      <!-- Data Tables -->
+      <div class="dashboard">
+        <div class="card">
+          <h2>📡 Live Telemetry</h2>
+          <div class="table-container">
+            <table id="telemetryTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Vehicle</th>
+                  <th>Time</th>
+                  <th>Speed</th>
+                  <th>Brake</th>
+                  <th>Temp</th>
+                  <th>Fuel</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+            <button
+              id="loadMoreBtn"
+              style="
+                display: none;
+                margin-top: 10px;
+                padding: 8px 16px;
+                background: var(--accent);
+                color: white;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+              "
+              onclick="loadMoreTelemetry()"
+            >
+              Load More
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <h2>🏆 Safety Scores</h2>
+          <div class="table-container">
+            <table id="scoresTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Vehicle</th>
+                  <th>Date</th>
+                  <th>Score</th>
+                  <th>Summary</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Data Tables -->
-    <div class="dashboard">
-      <div class="card">
-        <h2>📡 Live Telemetry</h2>
-        <div class="table-container">
-          <table id="telemetryTable">
-            <thead><tr><th>#</th><th>Vehicle</th><th>Time</th><th>Speed</th><th>Brake</th><th>Temp</th><th>Fuel</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-      <div class="card">
-        <h2>🏆 Safety Scores</h2>
-        <div class="table-container">
-          <table id="scoresTable">
-            <thead><tr><th>#</th><th>Vehicle</th><th>Date</th><th>Score</th><th>Summary</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="script.js"></script>
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>

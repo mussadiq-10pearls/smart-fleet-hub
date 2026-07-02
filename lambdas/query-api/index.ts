@@ -14,7 +14,7 @@ const docClient = DynamoDBDocumentClient.from(ddbClient);
 const TELEMETRY_TABLE = process.env.TELEMETRY_TABLE!;
 const SUMMARIES_TABLE = process.env.SUMMARIES_TABLE!;
 
-// Simple in-memory cache for scores (not production, but avoids repeated scans in quick succession)
+// In‑memory cache for scores (optional, 1 minute TTL)
 let cachedScores: any = null;
 let cacheTimestamp = 0;
 const CACHE_TTL = 60000; // 1 minute
@@ -26,43 +26,80 @@ export const handler = async (
   const queryParams = event.queryStringParameters || {};
 
   try {
+    // ---------- TELEMETRY (with pagination) ----------
     if (path === "/telemetry") {
-      // GET /telemetry?vehicleId=xxx (optional)
       const vehicleId = queryParams.vehicleId;
+      const startKeyParam = queryParams.startKey;
 
-      // If vehicleId provided, use Query; else Scan (with limit for demo)
-      let items: any[];
+      // Decode the start key if provided
+      let ExclusiveStartKey: any;
+      if (startKeyParam) {
+        try {
+          ExclusiveStartKey = JSON.parse(
+            Buffer.from(startKeyParam, "base64").toString("utf-8"),
+          );
+        } catch (e) {
+          return {
+            statusCode: 400,
+            body: JSON.stringify({ error: "Invalid startKey" }),
+          };
+        }
+      }
+
+      const baseParams: any = {
+        TableName: TELEMETRY_TABLE,
+        Limit: 50,
+        ExclusiveStartKey,
+      };
+
       if (vehicleId) {
+        // Query for a specific vehicle (uses partition key)
         const result = await docClient.send(
           new QueryCommand({
-            TableName: TELEMETRY_TABLE,
+            ...baseParams,
             KeyConditionExpression: "vehicleId = :vid",
             ExpressionAttributeValues: { ":vid": vehicleId },
-            Limit: 50,
             ScanIndexForward: false, // most recent first
           }),
         );
-        items = result.Items || [];
+        const items = result.Items || [];
+        const nextKey = result.LastEvaluatedKey
+          ? Buffer.from(JSON.stringify(result.LastEvaluatedKey)).toString(
+              "base64",
+            )
+          : null;
+
+        return {
+          statusCode: 200,
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+          body: JSON.stringify({ items, nextKey }),
+        };
       } else {
-        // No vehicleId, return last 50 events across all vehicles (Scan, limited)
-        const result = await docClient.send(
-          new ScanCommand({
-            TableName: TELEMETRY_TABLE,
-            Limit: 50,
-          }),
-        );
-        items = result.Items || [];
+        // Scan for all vehicles
+        const result = await docClient.send(new ScanCommand(baseParams));
+        const items = result.Items || [];
+        const nextKey = result.LastEvaluatedKey
+          ? Buffer.from(JSON.stringify(result.LastEvaluatedKey)).toString(
+              "base64",
+            )
+          : null;
+
+        return {
+          statusCode: 200,
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+          body: JSON.stringify({ items, nextKey }),
+        };
       }
-      return {
-        statusCode: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-        body: JSON.stringify(items),
-      };
-    } else if (path === "/scores") {
-      // GET /scores — return cached or fresh driver summaries
+    }
+
+    // ---------- SCORES (simple scan, no pagination) ----------
+    else if (path === "/scores") {
       const now = Date.now();
       if (cachedScores && now - cacheTimestamp < CACHE_TTL) {
         return {
@@ -75,23 +112,24 @@ export const handler = async (
         };
       }
 
-      // Scan DriverSummaries table for latest scores
       const result = await docClient.send(
-        new ScanCommand({
-          TableName: SUMMARIES_TABLE,
-        }),
+        new ScanCommand({ TableName: SUMMARIES_TABLE }),
       );
       cachedScores = result.Items || [];
       cacheTimestamp = now;
+
       return {
         statusCode: 200,
         headers: {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",
         },
-        body: JSON.stringify(cachedScores),
+        body: JSON.stringify(cachedScores), // still an array, frontend expects it
       };
-    } else {
+    }
+
+    // ---------- FALLBACK ----------
+    else {
       return {
         statusCode: 404,
         body: JSON.stringify({ error: "Not found" }),
