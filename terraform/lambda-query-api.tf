@@ -15,4 +15,8 @@ resource "aws_lambda_function" "query_api" {
       SUMMARIES_TABLE = aws_dynamodb_table.driver_summaries.name
     }
   }
+
+  tracing_config {
+    mode = "Active"
+  }
 }

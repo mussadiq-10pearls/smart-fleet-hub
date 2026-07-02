@@ -15,6 +15,9 @@ resource "aws_lambda_function" "telemetry_processor" {
       SNS_TOPIC_ARN = aws_sns_topic.safety_alerts.arn
     }
   }
+  tracing_config {
+    mode = "Active"
+  }
 }
 
 # SQS Event Source Mapping – connects the queue to the Lambda

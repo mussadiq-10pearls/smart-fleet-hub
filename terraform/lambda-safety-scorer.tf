@@ -15,21 +15,25 @@ resource "aws_lambda_function" "safety_scorer" {
       SUMMARIES_TABLE = aws_dynamodb_table.driver_summaries.name
     }
   }
+  tracing_config {
+    mode = "Active"
+  }
 }
 
 resource "aws_scheduler_schedule" "safety_scorer_cron" {
-  name        = "safety-scorer-every-2h10m"
+  name        = "safety-scorer-every-1hour"
   group_name  = "default"
-  description = "Generate driver safety scores every 2 hours 10 minutes"
+  description = "Generate driver safety scores every 1 hour"
 
   flexible_time_window {
     mode = "OFF"
   }
 
-  schedule_expression = "rate(130 minutes)" # 2h10m
+  schedule_expression = "rate(60 minutes)" # 1 hour
 
   target {
     arn      = aws_lambda_function.safety_scorer.arn
     role_arn = aws_iam_role.scheduler_execution_role.arn
   }
+
 }

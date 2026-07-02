@@ -17,4 +17,9 @@ resource "aws_lambda_function" "data_simulator" {
       QUEUE_URL = aws_sqs_queue.raw_telemetry.url
     }
   }
+
+  tracing_config {
+    mode = "Active"
+  }
+
 }
