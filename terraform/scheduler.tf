@@ -7,7 +7,7 @@ resource "aws_scheduler_schedule" "data_simulator_cron" {
     mode = "OFF"
   }
 
-  schedule_expression = "rate(5 hours)" # every 5 hours, later change to "rate(2 minutes)"
+  schedule_expression = "rate(2 minutes)" # every 5 hours, later change to "rate(2 minutes)"
 
   target {
     arn      = aws_lambda_function.data_simulator.arn
