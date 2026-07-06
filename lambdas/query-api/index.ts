@@ -148,6 +148,25 @@ export const handler = async (
       };
     }
 
+    // ---------- VEHICLES -----------------------
+    else if (path === "/vehicles") {
+      const result = await docClient.send(
+        new ScanCommand({
+          TableName: process.env.VEHICLES_TABLE!,
+          ProjectionExpression: "vehicleId",
+        }),
+      );
+      const vehicles = (result.Items || []).map((item: any) => item.vehicleId);
+      return {
+        statusCode: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+        body: JSON.stringify({ vehicles, count: vehicles.length }),
+      };
+    }
+
     // ---------- FALLBACK ----------
     else {
       return {

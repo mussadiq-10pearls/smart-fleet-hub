@@ -29,7 +29,7 @@ resource "aws_scheduler_schedule" "safety_scorer_cron" {
     mode = "OFF"
   }
 
-  schedule_expression = "rate(60 minutes)" # 1 hour
+  schedule_expression = "rate(12 hours)" # 1 hour
 
   target {
     arn      = aws_lambda_function.safety_scorer.arn

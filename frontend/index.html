@@ -12,14 +12,7 @@
         <h1>🚛 Fleet Safety & Compliance Hub</h1>
         <div class="controls">
           <label for="vehicleSelect">Vehicle:</label>
-          <select id="vehicleSelect">
-            <option value="">All Vehicles</option>
-            <option value="V-101">V-101</option>
-            <option value="V-202">V-202</option>
-            <option value="V-303">V-303</option>
-            <option value="V-404">V-404</option>
-            <option value="V-505">V-505</option>
-          </select>
+          <select id="vehicleSelect"></select>
           <button class="refresh-btn" onclick="refreshData()">
             🔄 Refresh Now
           </button>
@@ -28,6 +21,7 @@
             <span class="toggle-switch"></span>
             <span class="toggle-text">Auto‑refresh (2 min)</span>
           </label>
+          <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
       </header>
 
@@ -55,14 +49,14 @@
       <div class="dashboard">
         <div class="card">
           <h2>📡 Live Telemetry</h2>
-          <div class="table-container">
+          <div class="table-container" id="telemetryContainer">
             <table id="telemetryTable">
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Vehicle</th>
-                  <th>Time</th>
-                  <th>Speed</th>
+                  <th data-sort="vehicleId" class="sortable">Vehicle</th>
+                  <th data-sort="timestamp" class="sortable">Time</th>
+                  <th data-sort="speed" class="sortable">Speed</th>
                   <th>Brake</th>
                   <th>Temp</th>
                   <th>Fuel</th>
@@ -70,22 +64,6 @@
               </thead>
               <tbody></tbody>
             </table>
-            <button
-              id="loadMoreBtn"
-              style="
-                display: none;
-                margin-top: 10px;
-                padding: 8px 16px;
-                background: var(--accent);
-                color: white;
-                border: none;
-                border-radius: 6px;
-                cursor: pointer;
-              "
-              onclick="loadMoreTelemetry()"
-            >
-              Load More
-            </button>
           </div>
         </div>
         <div class="card">
@@ -125,6 +103,7 @@
       </div>
     </div>
 
+    <script src="auth.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

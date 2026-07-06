@@ -94,3 +94,11 @@ resource "aws_s3_object" "script_js" {
   content_type = "application/javascript"
   etag         = filemd5("../frontend/script.js")
 }
+
+resource "aws_s3_object" "auth_js" {
+  bucket       = aws_s3_bucket.frontend.id
+  key          = "auth.js"
+  source       = "../frontend/auth.js"
+  content_type = "application/javascript"
+  etag         = filemd5("../frontend/auth.js")
+}

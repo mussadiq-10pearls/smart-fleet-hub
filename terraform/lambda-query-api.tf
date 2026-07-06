@@ -13,7 +13,8 @@ resource "aws_lambda_function" "query_api" {
     variables = {
       TELEMETRY_TABLE = aws_dynamodb_table.telemetry_events.name
       SUMMARIES_TABLE = aws_dynamodb_table.driver_summaries.name
-      ALERTS_TABLE    = aws_dynamodb_table.alerts.name
+      ALERTS_TABLE    = aws_dynamodb_table.alerts.name,
+      VEHICLES_TABLE  = aws_dynamodb_table.vehicles.name
     }
   }
 
