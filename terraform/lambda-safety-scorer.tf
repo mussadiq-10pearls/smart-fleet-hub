@@ -13,6 +13,8 @@ resource "aws_lambda_function" "safety_scorer" {
     variables = {
       TELEMETRY_TABLE = aws_dynamodb_table.telemetry_events.name
       SUMMARIES_TABLE = aws_dynamodb_table.driver_summaries.name
+      VEHICLES_TABLE  = aws_dynamodb_table.vehicles.name
+      GROQ_API_KEY    = var.groq_api_key
     }
   }
   tracing_config {

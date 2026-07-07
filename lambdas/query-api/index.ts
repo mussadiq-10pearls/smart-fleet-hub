@@ -30,6 +30,7 @@ export const handler = async (
     if (path === "/telemetry") {
       const vehicleId = queryParams.vehicleId;
       const startKeyParam = queryParams.startKey;
+      const limit = parseInt(queryParams.limit || "50", 10);
 
       // Decode the start key if provided
       let ExclusiveStartKey: any;
@@ -48,7 +49,7 @@ export const handler = async (
 
       const baseParams: any = {
         TableName: TELEMETRY_TABLE,
-        Limit: 50,
+        Limit: parseInt(queryParams.limit || "50", 10),
         ExclusiveStartKey,
       };
 

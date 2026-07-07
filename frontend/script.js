@@ -9,6 +9,8 @@ const API_BASE = "https://jqobu1e2g5.execute-api.us-east-1.amazonaws.com"; // e.
 let telemetryNextKey = null;
 let isLoadingMore = false;
 let allTelemetryLoaded = false;
+let telemetryRequestId = 0;
+let activeTelemetryVehicleId = '';
 
 // ==========================================
 // CLIENT‑SIDE SORTING
@@ -40,29 +42,39 @@ function getAuthHeaders() {
 async function fetchTelemetry(vehicleId, startKey = null) {
   if (allTelemetryLoaded || isLoadingMore) return;
 
+  activeTelemetryVehicleId = vehicleId || '';
+  const requestId = ++telemetryRequestId;
+
+  // Use a large limit when no filter is active (load most data at once)
+  const limit = (!vehicleId && !startKey) ? 500 : 50;
+
   let url = `${API_BASE}/telemetry`;
   const params = new URLSearchParams();
   if (vehicleId) params.append('vehicleId', vehicleId);
   if (startKey) params.append('startKey', startKey);
-  if (params.toString()) url += '?' + params.toString();
+  params.append('limit', limit);               // ← pass limit to backend
+  url += '?' + params.toString();
 
   isLoadingMore = true;
   try {
     const resp = await fetch(url, { headers: getAuthHeaders() });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const data = await resp.json();
+
+    if (requestId !== telemetryRequestId) return;
+
     const items = data.items || [];
     telemetryNextKey = data.nextKey || null;
     if (!telemetryNextKey) allTelemetryLoaded = true;
 
-    // Add new items to the master array (avoid duplicates by id)
+    // Add new items to master array (avoid duplicates by id)
     items.forEach(item => {
       if (!allTelemetryData.some(existing => existing.id === item.id)) {
         allTelemetryData.push(item);
       }
     });
 
-    // Re-sort if a sort order is active, then render
+    // Re‑sort if a sort is active, then render
     if (currentSort.column) {
       sortData(currentSort.column, currentSort.direction);
     } else {
@@ -76,7 +88,6 @@ async function fetchTelemetry(vehicleId, startKey = null) {
     isLoadingMore = false;
   }
 }
-
 // ==========================================
 // RENDER TELEMETRY (replaces table body)
 // ==========================================
@@ -173,6 +184,8 @@ async function loadVehicles() {
     const resp = await fetch(`${API_BASE}/vehicles`, { headers: getAuthHeaders() });
     const data = await resp.json();
     const vehicleSelect = document.getElementById('vehicleSelect');
+    const currentSelection = vehicleSelect?.value || '';
+
     vehicleSelect.innerHTML = '<option value="">All Vehicles</option>';
     data.vehicles.forEach(vid => {
       const opt = document.createElement('option');
@@ -180,6 +193,12 @@ async function loadVehicles() {
       opt.textContent = vid;
       vehicleSelect.appendChild(opt);
     });
+
+    if (currentSelection) {
+      const selectedVehicleExists = Array.from(vehicleSelect.options).some(option => option.value === currentSelection);
+      vehicleSelect.value = selectedVehicleExists ? currentSelection : '';
+    }
+
     document.getElementById('totalVehicles').textContent = data.count;
   } catch (err) {
     console.error('Failed to load vehicles', err);
@@ -197,6 +216,9 @@ function setupInfiniteScroll() {
     if (scrollHeight - scrollTop - clientHeight < 100) {
       if (!allTelemetryLoaded && !isLoadingMore) {
         const vehicleId = document.getElementById('vehicleSelect').value;
+        if (vehicleId !== activeTelemetryVehicleId) {
+          activeTelemetryVehicleId = vehicleId || '';
+        }
         fetchTelemetry(vehicleId, telemetryNextKey);
       }
     }
@@ -210,6 +232,7 @@ async function refreshData(reset = true) {
   const vehicleId = document.getElementById('vehicleSelect').value;
 
   if (reset) {
+    telemetryRequestId += 1;
     telemetryNextKey = null;
     allTelemetryLoaded = false;
     isLoadingMore = false;
