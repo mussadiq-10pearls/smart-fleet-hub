@@ -3,8 +3,8 @@ resource "aws_apigatewayv2_api" "fleet_api" {
   name          = "smart-fleet-api"
   protocol_type = "HTTP"
   cors_configuration {
-    allow_origins     = ["*"]
-    allow_methods     = ["GET"]
+    allow_origins     = ["https://${aws_cloudfront_distribution.frontend.domain_name}"]
+    allow_methods     = ["GET", "POST", "OPTIONS"]
     allow_headers     = ["authorization", "content-type", "x-amz-date", "x-api-key", "x-amz-security-token"]
     allow_credentials = false
     max_age           = 3600
@@ -75,6 +75,14 @@ resource "aws_apigatewayv2_authorizer" "cognito" {
 resource "aws_apigatewayv2_route" "vehicles_route" {
   api_id             = aws_apigatewayv2_api.fleet_api.id
   route_key          = "GET /vehicles"
+  target             = "integrations/${aws_apigatewayv2_integration.query_lambda.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+resource "aws_apigatewayv2_route" "ask_route" {
+  api_id             = aws_apigatewayv2_api.fleet_api.id
+  route_key          = "POST /ask"
   target             = "integrations/${aws_apigatewayv2_integration.query_lambda.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id

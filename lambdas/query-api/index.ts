@@ -13,6 +13,9 @@ const docClient = DynamoDBDocumentClient.from(ddbClient);
 
 const TELEMETRY_TABLE = process.env.TELEMETRY_TABLE!;
 const SUMMARIES_TABLE = process.env.SUMMARIES_TABLE!;
+const ALERTS_TABLE = process.env.ALERTS_TABLE!;
+const VEHICLES_TABLE = process.env.VEHICLES_TABLE!;
+const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
 
 // In‑memory cache for scores (optional, 1 minute TTL)
 let cachedScores: any = null;
@@ -165,6 +168,117 @@ export const handler = async (
           "Access-Control-Allow-Origin": "*",
         },
         body: JSON.stringify({ vehicles, count: vehicles.length }),
+      };
+    }
+
+    // ------- NEW /ask ROUTE -------
+    else if (path === "/ask") {
+      // Safely extract question from body (handles string or object)
+      let body: any;
+      if (typeof event.body === "string") {
+        try {
+          body = JSON.parse(event.body);
+        } catch (e) {
+          body = {};
+        }
+      } else {
+        body = event.body || {};
+      }
+
+      const question = body.question;
+      if (!question) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: "Missing 'question' in request body" }),
+        };
+      }
+
+      // 1. Gather context from DynamoDB
+      const [telemetryResp, scoresResp, alertsResp, vehiclesResp] =
+        await Promise.all([
+          docClient.send(
+            new ScanCommand({ TableName: TELEMETRY_TABLE, Limit: 10 }),
+          ), // recent 10 events
+          docClient.send(new ScanCommand({ TableName: SUMMARIES_TABLE })),
+          docClient.send(
+            new ScanCommand({ TableName: ALERTS_TABLE, Limit: 5 }),
+          ),
+          docClient.send(
+            new ScanCommand({
+              TableName: VEHICLES_TABLE,
+              ProjectionExpression: "vehicleId",
+            }),
+          ),
+        ]);
+
+      const recentTelemetry = telemetryResp.Items || [];
+      const scores = scoresResp.Items || [];
+      const recentAlerts = alertsResp.Items || [];
+      const activeVehicles = (vehiclesResp.Items || []).map(
+        (v: any) => v.vehicleId,
+      );
+
+      // 2. Build a prompt with the data + user question
+      const context = `
+Current fleet status:
+- Active vehicles: ${activeVehicles.join(", ")}
+- Recent telemetry (last 10 events): ${JSON.stringify(recentTelemetry.map((item) => ({ vehicleId: item.vehicleId, speed: item.speed, harshBraking: item.harshBraking, timestamp: item.timestamp })))}
+- Latest safety scores: ${JSON.stringify(scores.map((s) => ({ vehicleId: s.vehicleId, score: s.score, summary: s.summary })))}
+- Recent alerts: ${JSON.stringify(recentAlerts.map((a) => ({ vehicleId: a.vehicleId, violations: a.violations, timestamp: a.timestamp })))}
+`.trim();
+
+      const systemPrompt = `You are a Fleet Safety Assistant. Answer user questions concisely and professionally using ONLY the provided fleet data below.
+- If the question is about the fleet, give a clear, brief answer with relevant numbers.
+- If the question is not about the fleet or cannot be answered from the data, respond exactly with: "I'm a fleet safety assistant. Please ask a question about the fleet, like driver scores, alerts, or telemetry."
+- Do not add greetings, explanations, or code.
+- Keep answers to 1–3 sentences.`;
+
+      const prompt = `${systemPrompt}
+
+Fleet Data:
+${context}
+
+User: ${question}
+Assistant:`;
+
+      // 3. Call Groq
+      let answer = "Sorry, I couldn't process your request right now.";
+      if (GROQ_API_KEY) {
+        try {
+          const response = await fetch(
+            "https://api.groq.com/openai/v1/chat/completions",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${GROQ_API_KEY}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                messages: [{ role: "user", content: prompt }],
+                temperature: 0.2,
+                max_tokens: 300,
+              }),
+            },
+          );
+          const data = await response.json();
+          answer = data.choices?.[0]?.message?.content || answer;
+        } catch (err) {
+          console.error("Groq call failed for /ask", err);
+          answer =
+            "I'm having trouble accessing the AI model. Please try again later.";
+        }
+      } else {
+        answer = "AI assistant is not configured (missing API key).";
+      }
+
+      return {
+        statusCode: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+        body: JSON.stringify({ question, answer }),
       };
     }
 

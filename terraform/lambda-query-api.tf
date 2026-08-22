@@ -14,7 +14,8 @@ resource "aws_lambda_function" "query_api" {
       TELEMETRY_TABLE = aws_dynamodb_table.telemetry_events.name
       SUMMARIES_TABLE = aws_dynamodb_table.driver_summaries.name
       ALERTS_TABLE    = aws_dynamodb_table.alerts.name,
-      VEHICLES_TABLE  = aws_dynamodb_table.vehicles.name
+      VEHICLES_TABLE  = aws_dynamodb_table.vehicles.name,
+      GROQ_API_KEY    = var.groq_api_key
     }
   }
 

@@ -97,7 +97,7 @@ function renderTelemetry(data) {
   data.forEach((item, index) => {
     const row = document.createElement('tr');
     if (item.speed > 100 || item.harshBraking) row.classList.add('violation');
-    const time = new Date(item.timestamp).toLocaleTimeString();
+    const time = new Date(item.timestamp).toLocaleString();
     row.innerHTML = `
       <td>${index + 1}</td>
       <td>${item.vehicleId}</td>
@@ -300,7 +300,7 @@ function renderAlerts(data) {
   }
   data.forEach((item, index) => {
     const row = document.createElement('tr');
-    const time = new Date(item.timestamp).toLocaleTimeString();
+    const time = new Date(item.timestamp).toLocaleString();
     row.innerHTML = `
       <td>${index + 1}</td>
       <td>${item.vehicleId}</td>
@@ -396,6 +396,45 @@ function startDashboard() {
   setupAutoRefreshToggle();
   refreshData(true);
 }
+
+// --- Chat widget ---
+function toggleChat() {
+  const body = document.getElementById('chatBody');
+  body.style.display = body.style.display === 'none' ? 'block' : 'none';
+}
+
+async function askQuestion() {
+  const input = document.getElementById('questionInput');
+  const question = input.value.trim();
+  if (!question) return;
+
+  // Display user message
+  const messages = document.getElementById('chatMessages');
+  messages.innerHTML += `<div class="msg user">🧑 ${question}</div>`;
+  input.value = '';
+
+  // Show "thinking" placeholder
+  const thinkingId = Date.now();
+  messages.innerHTML += `<div id="msg-${thinkingId}" class="msg bot">🤔 Thinking...</div>`;
+  messages.scrollTop = messages.scrollHeight;
+
+  try {
+    const resp = await fetch(`${API_BASE}/ask`, {
+      method: 'POST',
+      headers: {
+        ...getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ question })
+    });
+    const data = await resp.json();
+    document.getElementById(`msg-${thinkingId}`).innerHTML = `🤖 ${data.answer}`;
+  } catch (err) {
+    document.getElementById(`msg-${thinkingId}`).innerHTML = `🤖 Sorry, something went wrong.`;
+    console.error('Ask error:', err);
+  }
+}
+
 
 window.logout = logout;
 init();

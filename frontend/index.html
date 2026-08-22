@@ -103,6 +103,21 @@
       </div>
     </div>
 
+    <div id="chatWidget">
+      <div id="chatHeader" onclick="toggleChat()">💬 Fleet Assistant</div>
+      <div id="chatBody" style="display: none">
+        <div id="chatMessages"></div>
+        <div id="chatInput">
+          <input
+            type="text"
+            id="questionInput"
+            placeholder="Ask me anything..."
+          />
+          <button onclick="askQuestion()">Send</button>
+        </div>
+      </div>
+    </div>
+
     <script src="auth.js"></script>
     <script src="script.js"></script>
   </body>
