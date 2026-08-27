@@ -1,0 +1,363 @@
+{
+  "communities": {
+    "0": [
+      "frontend_script",
+      "frontend_script_alltelemetrydata",
+      "frontend_script_askquestion",
+      "frontend_script_clearautorefresh",
+      "frontend_script_currentsort",
+      "frontend_script_fetchtelemetry",
+      "frontend_script_getauthheaders",
+      "frontend_script_init",
+      "frontend_script_loadvehicles",
+      "frontend_script_refreshdata",
+      "frontend_script_renderalerts",
+      "frontend_script_renderscores",
+      "frontend_script_rendertelemetry",
+      "frontend_script_setupautorefreshtoggle",
+      "frontend_script_setupinfinitescroll",
+      "frontend_script_setupsorting",
+      "frontend_script_sortdata",
+      "frontend_script_startautorefresh",
+      "frontend_script_startdashboard",
+      "frontend_script_togglechat",
+      "frontend_script_togglesort",
+      "frontend_script_updatesafestdriver",
+      "frontend_script_updatesortindicators",
+      "frontend_script_updatestatsfromdom"
+    ],
+    "1": [
+      "lambdas_alerts_persister_package_devdependencies",
+      "lambdas_alerts_persister_package_devdependencies_types_aws_lambda",
+      "lambdas_alerts_persister_package_devdependencies_types_node",
+      "lambdas_alerts_persister_package_devdependencies_typescript",
+      "lambdas_data_simulator_package_devdependencies",
+      "lambdas_data_simulator_package_devdependencies_types_node",
+      "lambdas_data_simulator_package_devdependencies_typescript",
+      "lambdas_query_api_package_devdependencies",
+      "lambdas_query_api_package_devdependencies_types_aws_lambda",
+      "lambdas_query_api_package_devdependencies_types_node",
+      "lambdas_query_api_package_devdependencies_typescript",
+      "lambdas_query_api_package_json_types_aws_lambda",
+      "lambdas_query_api_package_json_types_node",
+      "lambdas_query_api_package_json_typescript",
+      "lambdas_safety_scorer_package_devdependencies",
+      "lambdas_safety_scorer_package_devdependencies_types_aws_lambda",
+      "lambdas_safety_scorer_package_devdependencies_types_node",
+      "lambdas_safety_scorer_package_devdependencies_typescript",
+      "lambdas_telemetry_processor_package_devdependencies",
+      "lambdas_telemetry_processor_package_devdependencies_types_aws_lambda",
+      "lambdas_telemetry_processor_package_devdependencies_types_node",
+      "lambdas_telemetry_processor_package_devdependencies_typescript"
+    ],
+    "2": [
+      "aws_sdk_client_sns",
+      "lambdas_alerts_persister_package_dependencies",
+      "lambdas_alerts_persister_package_dependencies_aws_sdk_client_dynamodb",
+      "lambdas_alerts_persister_package_dependencies_aws_sdk_lib_dynamodb",
+      "lambdas_query_api_package_dependencies",
+      "lambdas_query_api_package_dependencies_aws_sdk_client_dynamodb",
+      "lambdas_query_api_package_dependencies_aws_sdk_lib_dynamodb",
+      "lambdas_query_api_package_json_aws_sdk_client_dynamodb",
+      "lambdas_query_api_package_json_aws_sdk_lib_dynamodb",
+      "lambdas_safety_scorer_package_dependencies",
+      "lambdas_safety_scorer_package_dependencies_aws_sdk_client_dynamodb",
+      "lambdas_safety_scorer_package_dependencies_aws_sdk_lib_dynamodb",
+      "lambdas_telemetry_processor_package_dependencies",
+      "lambdas_telemetry_processor_package_dependencies_aws_sdk_client_dynamodb",
+      "lambdas_telemetry_processor_package_dependencies_aws_sdk_client_sns",
+      "lambdas_telemetry_processor_package_dependencies_aws_sdk_lib_dynamodb"
+    ],
+    "3": [
+      "aws_sdk_client_sqs",
+      "lambdas_data_simulator_package",
+      "lambdas_data_simulator_package_author",
+      "lambdas_data_simulator_package_dependencies",
+      "lambdas_data_simulator_package_dependencies_aws_sdk_client_sqs",
+      "lambdas_data_simulator_package_description",
+      "lambdas_data_simulator_package_keywords",
+      "lambdas_data_simulator_package_license",
+      "lambdas_data_simulator_package_main",
+      "lambdas_data_simulator_package_name",
+      "lambdas_data_simulator_package_scripts",
+      "lambdas_data_simulator_package_scripts_test",
+      "lambdas_data_simulator_package_version"
+    ],
+    "4": [
+      "dotenv",
+      "groq_test_package",
+      "groq_test_package_author",
+      "groq_test_package_dependencies",
+      "groq_test_package_dependencies_dotenv",
+      "groq_test_package_description",
+      "groq_test_package_keywords",
+      "groq_test_package_license",
+      "groq_test_package_main",
+      "groq_test_package_name",
+      "groq_test_package_scripts",
+      "groq_test_package_scripts_test",
+      "groq_test_package_version"
+    ],
+    "5": [
+      "frontend_auth",
+      "frontend_auth_base64urlencode",
+      "frontend_auth_generatecodechallenge",
+      "frontend_auth_generatecodeverifier",
+      "frontend_auth_getstoredtokens",
+      "frontend_auth_handleauthcallback",
+      "frontend_auth_istokenvalid",
+      "frontend_auth_login",
+      "frontend_auth_logout",
+      "frontend_auth_refreshaccesstoken",
+      "frontend_auth_settokens"
+    ],
+    "6": [
+      "lambdas_alerts_persister_package",
+      "lambdas_alerts_persister_package_author",
+      "lambdas_alerts_persister_package_description",
+      "lambdas_alerts_persister_package_keywords",
+      "lambdas_alerts_persister_package_license",
+      "lambdas_alerts_persister_package_main",
+      "lambdas_alerts_persister_package_name",
+      "lambdas_alerts_persister_package_scripts",
+      "lambdas_alerts_persister_package_scripts_test",
+      "lambdas_alerts_persister_package_version"
+    ],
+    "7": [
+      "lambdas_alerts_persister_tsconfig",
+      "lambdas_alerts_persister_tsconfig_compileroptions",
+      "lambdas_alerts_persister_tsconfig_compileroptions_esmoduleinterop",
+      "lambdas_alerts_persister_tsconfig_compileroptions_module",
+      "lambdas_alerts_persister_tsconfig_compileroptions_outdir",
+      "lambdas_alerts_persister_tsconfig_compileroptions_rootdir",
+      "lambdas_alerts_persister_tsconfig_compileroptions_strict",
+      "lambdas_alerts_persister_tsconfig_compileroptions_target",
+      "lambdas_alerts_persister_tsconfig_compileroptions_types",
+      "lambdas_alerts_persister_tsconfig_json_ref_node"
+    ],
+    "8": [
+      "lambdas_data_simulator_tsconfig",
+      "lambdas_data_simulator_tsconfig_compileroptions",
+      "lambdas_data_simulator_tsconfig_compileroptions_esmoduleinterop",
+      "lambdas_data_simulator_tsconfig_compileroptions_module",
+      "lambdas_data_simulator_tsconfig_compileroptions_outdir",
+      "lambdas_data_simulator_tsconfig_compileroptions_rootdir",
+      "lambdas_data_simulator_tsconfig_compileroptions_strict",
+      "lambdas_data_simulator_tsconfig_compileroptions_target",
+      "lambdas_data_simulator_tsconfig_compileroptions_types",
+      "lambdas_data_simulator_tsconfig_json_ref_node"
+    ],
+    "9": [
+      "lambdas_query_api_package",
+      "lambdas_query_api_package_author",
+      "lambdas_query_api_package_description",
+      "lambdas_query_api_package_keywords",
+      "lambdas_query_api_package_license",
+      "lambdas_query_api_package_main",
+      "lambdas_query_api_package_name",
+      "lambdas_query_api_package_scripts",
+      "lambdas_query_api_package_scripts_test",
+      "lambdas_query_api_package_version"
+    ],
+    "10": [
+      "lambdas_query_api_tsconfig",
+      "lambdas_query_api_tsconfig_compileroptions",
+      "lambdas_query_api_tsconfig_compileroptions_esmoduleinterop",
+      "lambdas_query_api_tsconfig_compileroptions_module",
+      "lambdas_query_api_tsconfig_compileroptions_outdir",
+      "lambdas_query_api_tsconfig_compileroptions_rootdir",
+      "lambdas_query_api_tsconfig_compileroptions_strict",
+      "lambdas_query_api_tsconfig_compileroptions_target",
+      "lambdas_query_api_tsconfig_compileroptions_types",
+      "lambdas_query_api_tsconfig_json_ref_node"
+    ],
+    "11": [
+      "lambdas_safety_scorer_package",
+      "lambdas_safety_scorer_package_author",
+      "lambdas_safety_scorer_package_description",
+      "lambdas_safety_scorer_package_keywords",
+      "lambdas_safety_scorer_package_license",
+      "lambdas_safety_scorer_package_main",
+      "lambdas_safety_scorer_package_name",
+      "lambdas_safety_scorer_package_scripts",
+      "lambdas_safety_scorer_package_scripts_test",
+      "lambdas_safety_scorer_package_version"
+    ],
+    "12": [
+      "lambdas_safety_scorer_tsconfig",
+      "lambdas_safety_scorer_tsconfig_compileroptions",
+      "lambdas_safety_scorer_tsconfig_compileroptions_esmoduleinterop",
+      "lambdas_safety_scorer_tsconfig_compileroptions_module",
+      "lambdas_safety_scorer_tsconfig_compileroptions_outdir",
+      "lambdas_safety_scorer_tsconfig_compileroptions_rootdir",
+      "lambdas_safety_scorer_tsconfig_compileroptions_strict",
+      "lambdas_safety_scorer_tsconfig_compileroptions_target",
+      "lambdas_safety_scorer_tsconfig_compileroptions_types",
+      "lambdas_safety_scorer_tsconfig_json_ref_node"
+    ],
+    "13": [
+      "lambdas_telemetry_processor_package",
+      "lambdas_telemetry_processor_package_author",
+      "lambdas_telemetry_processor_package_description",
+      "lambdas_telemetry_processor_package_keywords",
+      "lambdas_telemetry_processor_package_license",
+      "lambdas_telemetry_processor_package_main",
+      "lambdas_telemetry_processor_package_name",
+      "lambdas_telemetry_processor_package_scripts",
+      "lambdas_telemetry_processor_package_scripts_test",
+      "lambdas_telemetry_processor_package_version"
+    ],
+    "14": [
+      "lambdas_telemetry_processor_tsconfig",
+      "lambdas_telemetry_processor_tsconfig_compileroptions",
+      "lambdas_telemetry_processor_tsconfig_compileroptions_esmoduleinterop",
+      "lambdas_telemetry_processor_tsconfig_compileroptions_module",
+      "lambdas_telemetry_processor_tsconfig_compileroptions_outdir",
+      "lambdas_telemetry_processor_tsconfig_compileroptions_rootdir",
+      "lambdas_telemetry_processor_tsconfig_compileroptions_strict",
+      "lambdas_telemetry_processor_tsconfig_compileroptions_target",
+      "lambdas_telemetry_processor_tsconfig_compileroptions_types",
+      "lambdas_telemetry_processor_tsconfig_json_ref_node"
+    ],
+    "15": [
+      "lambdas_safety_scorer_index",
+      "lambdas_safety_scorer_index_calculaterulebasedscore",
+      "lambdas_safety_scorer_index_ddbclient",
+      "lambdas_safety_scorer_index_docclient",
+      "lambdas_safety_scorer_index_getaiscore",
+      "lambdas_safety_scorer_index_gettelemetryforvehicle",
+      "lambdas_safety_scorer_index_handler",
+      "lambdas_safety_scorer_index_telemetryitem"
+    ],
+    "16": [
+      "lambdas_telemetry_processor_index",
+      "lambdas_telemetry_processor_index_ddbclient",
+      "lambdas_telemetry_processor_index_docclient",
+      "lambdas_telemetry_processor_index_handler",
+      "lambdas_telemetry_processor_index_sns",
+      "lambdas_telemetry_processor_index_telemetryevent"
+    ],
+    "17": [
+      "lambdas_data_simulator_index",
+      "lambdas_data_simulator_index_generatetelemetry",
+      "lambdas_data_simulator_index_handler",
+      "lambdas_data_simulator_index_sqs",
+      "lambdas_data_simulator_index_vehicle_ids"
+    ],
+    "18": [
+      "lambdas_alerts_persister_alerts_persister",
+      "lambdas_alerts_persister_alerts_persister_ddbclient",
+      "lambdas_alerts_persister_alerts_persister_docclient",
+      "lambdas_alerts_persister_alerts_persister_handler"
+    ],
+    "19": [
+      "lambdas_alerts_persister_index",
+      "lambdas_alerts_persister_index_ddbclient",
+      "lambdas_alerts_persister_index_docclient",
+      "lambdas_alerts_persister_index_handler"
+    ],
+    "20": [
+      "lambdas_query_api_index",
+      "lambdas_query_api_index_ddbclient",
+      "lambdas_query_api_index_docclient",
+      "lambdas_query_api_index_handler"
+    ],
+    "21": [
+      "groq_test_test_groq"
+    ]
+  },
+  "cohesion": {
+    "0": 0.17753623188405798,
+    "1": 0.12121212121212122,
+    "2": 0.15,
+    "3": 0.15384615384615385,
+    "4": 0.15384615384615385,
+    "5": 0.32727272727272727,
+    "6": 0.2,
+    "7": 0.2,
+    "8": 0.2,
+    "9": 0.2,
+    "10": 0.2,
+    "11": 0.2,
+    "12": 0.2,
+    "13": 0.2,
+    "14": 0.2,
+    "15": 0.35714285714285715,
+    "16": 0.3333333333333333,
+    "17": 0.5,
+    "18": 0.5,
+    "19": 0.5,
+    "20": 0.5,
+    "21": 1.0
+  },
+  "gods": [
+    {
+      "id": "frontend_script_refreshdata",
+      "label": "refreshData()",
+      "degree": 9
+    },
+    {
+      "id": "lambdas_query_api_tsconfig_compileroptions",
+      "label": "compilerOptions",
+      "degree": 8
+    },
+    {
+      "id": "lambdas_safety_scorer_tsconfig_compileroptions",
+      "label": "compilerOptions",
+      "degree": 8
+    },
+    {
+      "id": "lambdas_telemetry_processor_tsconfig_compileroptions",
+      "label": "compilerOptions",
+      "degree": 8
+    },
+    {
+      "id": "lambdas_alerts_persister_tsconfig_compileroptions",
+      "label": "compilerOptions",
+      "degree": 8
+    },
+    {
+      "id": "lambdas_data_simulator_tsconfig_compileroptions",
+      "label": "compilerOptions",
+      "degree": 8
+    },
+    {
+      "id": "frontend_script_fetchtelemetry",
+      "label": "fetchTelemetry()",
+      "degree": 7
+    },
+    {
+      "id": "frontend_script_startdashboard",
+      "label": "startDashboard()",
+      "degree": 6
+    },
+    {
+      "id": "frontend_script_getauthheaders",
+      "label": "getAuthHeaders()",
+      "degree": 5
+    },
+    {
+      "id": "frontend_script_sortdata",
+      "label": "sortData()",
+      "degree": 5
+    }
+  ],
+  "surprises": [],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `devDependencies` connect `@types/node` to `data-simulator/package.json`?",
+      "why": "High betweenness centrality (0.042) - this node is a cross-community bridge."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `TelemetryItem`, `TelemetryEvent`, `allTelemetryData` to the rest of the system?",
+      "why": "103 weakly-connected nodes found - possible documentation gaps or missing edges."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `@types/node` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.12121212121212122 - nodes in this community are weakly interconnected."
+    }
+  ]
+}
