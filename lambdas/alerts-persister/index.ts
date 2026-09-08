@@ -9,6 +9,7 @@ const docClient = DynamoDBDocumentClient.from(ddbClient);
 
 const TABLE_NAME = process.env.ALERTS_TABLE!;
 
+//handler for the SQS event that contains the alerts from the SNS topic
 export const handler = async (event: SQSEvent) => {
   for (const record of event.Records) {
     try {
