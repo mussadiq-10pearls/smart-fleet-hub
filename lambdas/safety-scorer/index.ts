@@ -98,7 +98,7 @@ Data: Vehicle ${vid} had ${events.length} readings in the last 2 hours. Average 
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
+          model: "qwen/qwen3.8-27b",
           messages: [{ role: "user", content: prompt }],
           temperature: 0.2,
           max_tokens: 150,

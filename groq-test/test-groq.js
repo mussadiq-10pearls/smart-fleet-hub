@@ -14,7 +14,7 @@ const response = await fetch("https://api.groq.com/openai/v1/chat/completions", 
     "Content-Type": "application/json"
   },
   body: JSON.stringify({
-    model: "llama-3.3-70b-versatile",   // fastest quality model
+    model: "qwen/qwen3.8-27b",   // fastest quality model
     messages: [
       { role: "user", content: "Say hello world" }
     ],
