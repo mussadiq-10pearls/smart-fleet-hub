@@ -197,11 +197,13 @@ export const handler = async (
       const [telemetryResp, scoresResp, alertsResp, vehiclesResp] =
         await Promise.all([
           docClient.send(
-            new ScanCommand({ TableName: TELEMETRY_TABLE, Limit: 10 }),
+            new ScanCommand({ TableName: TELEMETRY_TABLE, Limit: 20 }),
           ), // recent 10 events
-          docClient.send(new ScanCommand({ TableName: SUMMARIES_TABLE })),
           docClient.send(
-            new ScanCommand({ TableName: ALERTS_TABLE, Limit: 5 }),
+            new ScanCommand({ TableName: SUMMARIES_TABLE, Limit: 20 }),
+          ),
+          docClient.send(
+            new ScanCommand({ TableName: ALERTS_TABLE, Limit: 20 }),
           ),
           docClient.send(
             new ScanCommand({
