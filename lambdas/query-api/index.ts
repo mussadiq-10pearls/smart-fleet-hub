@@ -240,7 +240,7 @@ ${context}
 
 User: ${question}
 Assistant:`;
-
+      let errorMessage;
       // 3. Call Groq
       let answer = "Sorry, I couldn't process your request right now.";
       if (GROQ_API_KEY) {
@@ -265,6 +265,7 @@ Assistant:`;
           answer = data.choices?.[0]?.message?.content || answer;
         } catch (err) {
           console.error("Groq call failed for /ask", err);
+          errorMessage = err;
           answer =
             "I'm having trouble accessing the AI model. Please try again later.";
         }
@@ -278,7 +279,7 @@ Assistant:`;
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",
         },
-        body: JSON.stringify({ question, answer }),
+        body: JSON.stringify({ question, answer, errorMessage }),
       };
     }
 
